@@ -2,7 +2,6 @@
 
 import requests
 import json
-import re
 import attr
 
 user_agent = "poe-vial-upgrades/1.0"
@@ -18,17 +17,19 @@ class UpgradePath (object):
     upgraded_item  = attr.ib()
 
     start_price    = attr.ib(default=None)
-    vial_price     = attr.ib(default=None)
+    vial_price     = attr.ib(default=-1)
     upgraded_price = attr.ib(default=None)
 
     def get_gain(self):
-        return self.upgraded_price - (self.start_price + self.vial_price)
+        if self.vial_price == -1:
+            return -999
+        else:
+            return self.upgraded_price - (self.start_price + self.vial_price)
 
 
 def get_current_league():
-    r = ses.get("https://poe.ninja")
-    m = re.search(r'window\.economyLeagues = \[\{"name":"(\w+)","url":"challenge",', r.text)
-    return m.group(1)
+    r = ses.get("https://poe.ninja/api/data/getindexstate")
+    return json.loads(r.text)["economyLeagues"][0]["name"]
 
 
 def poe_ninja_item_overview(league, type_):
